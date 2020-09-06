@@ -85,10 +85,14 @@ class SpotifyAPI(object):
     def get_resource(self, lookup_id, resource_type='albums', version='v1'):
         uri = f"https://api.spotify.com/{version}/{resource_type}/{lookup_id}"
         headers = self.get_resource_header()
-        endpoint = urlencode({"offset" : "20"})
-        lookup_url = f"{uri}?{endpoint}"
-        print(lookup_url)
-        r = requests.get(lookup_url, headers=headers)
+        r = requests.get(uri, headers=headers)
+        if r.status_code not in range(200, 299):
+            return {}
+        return r.json()
+    
+    def make_request(self, uri):
+        headers = self.get_resource_header()
+        r = requests.get(uri, headers=headers)
         if r.status_code not in range(200, 299):
             return {}
         return r.json()
@@ -99,11 +103,21 @@ class SpotifyAPI(object):
     def get_artist(self, _id):
         return self.get_resource(_id, resource_type="artists", version="v1")
 
-    def get_playlist(self, _id):
-        return self.get_resource(_id, resource_type="playlists", version="v1")
-
     def get_user(self, _id):
         return self.get_resource(_id, resource_type="users", version="v1")
+
+    def get_playlist(self, _id):
+        playlist = self.get_resource(_id, resource_type="playlists", version="v1")
+        if playlist['tracks']['next'] == None:
+            return playlist
+        
+        tmp = self.make_request(playlist['tracks']['next'])
+        playlist['tracks']['items'] = playlist['tracks']['items']+tmp['items']
+        while tmp['next'] != None:
+            playlist['tracks']['items'] = playlist['tracks']['items']+tmp['items']
+            tmp = self.make_request(tmp['next'])
+
+        return playlist
 
     def search(self, query, search_type,):
         headers = get_resourse_header()
@@ -123,8 +137,8 @@ sp = SpotifyAPI(client_id, client_secret)
 
 
 tmp = sp.get_playlist(sys.argv[1])
-i = 0
 for x in tmp['tracks']['items']:
     print("%s | %s" % (x['track']['name'], x['track']['artists'][0]['name']))
 
-print(len(tmp['tracks']['items']))
+print(tmp['tracks']['total'])
+print(tmp)
