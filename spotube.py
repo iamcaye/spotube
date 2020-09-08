@@ -4,8 +4,6 @@ import sys
 from spoti import SpotifyAPI
 from youtube import YoutubeAPI
 
-client_id = '4979459f9eae4d6b9bcc7b626f19b03b'
-client_secret = 'd594287114de46798243f83230f385db'
 
 yt = YoutubeAPI()
 sp = SpotifyAPI(client_id, client_secret)
