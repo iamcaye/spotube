@@ -6,8 +6,6 @@ import datetime
 import base64
 from urllib.parse import urlencode
 
-client_id = '4979459f9eae4d6b9bcc7b626f19b03b'
-client_secret = 'd594287114de46798243f83230f385db'
 
 class SpotifyAPI(object):
     access_token = None
@@ -132,13 +130,15 @@ class SpotifyAPI(object):
             return {}
 
         return r.json()
+    
+    def get_playlist_sa(self, playlist):
+        tmp = self.get_playlist(playlist)
+        res = []
+        for x in tmp['tracks']['items']:
+            print("%s | %s" % (x['track']['name'], x['track']['artists'][0]['name']))
+            res.append(f"{x['track']['name']} | {x['track']['artists'][0]['name']}")
 
-sp = SpotifyAPI(client_id, client_secret)
+        print(tmp['tracks']['total'])
+        return res
 
 
-tmp = sp.get_playlist(sys.argv[1])
-for x in tmp['tracks']['items']:
-    print("%s | %s" % (x['track']['name'], x['track']['artists'][0]['name']))
-
-print(tmp['tracks']['total'])
-print(tmp)
